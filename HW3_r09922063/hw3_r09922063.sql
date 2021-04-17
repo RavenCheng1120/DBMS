@@ -152,7 +152,8 @@ CREATE TABLE admire(
 INSERT INTO exhibitor VALUES
 (0, 59, 'fan art', 20, 'Fancy Frontier 40'),
 (1, 138, 'video game', 1, 'Comic World Taiwan 54'),
-(2, 111, 'comic', 13, 'TAIPEI GAME SHOW 2021');
+(2, 111, 'comic', 13, 'TAIPEI GAME SHOW 2021'),
+(3, 33, 'comic', 20, 'Fancy Frontier 40');
 
 INSERT INTO artist VALUES
 ('Jaiden Dittfach', 23, 'America', NULL),
@@ -161,7 +162,7 @@ INSERT INTO artist VALUES
 ('Kota', 25, 'Korea', 1),
 ('Ivan Chakarov', 35, 'France', NULL),
 ('Ross Tran', 29, 'China', NULL),
-('Mike Judge', 19, 'America', NULL);
+('Mike Judge', 19, 'America', 3);
 
 INSERT INTO company VALUES
 (123456789, 'P.O. Box 10,000 Lake Buena Vista, FL 32830', 'Disney', 2),
@@ -192,7 +193,8 @@ INSERT INTO illustrator VALUES
 INSERT INTO exhibition VALUES
 ('Comic World Taiwan 54', '2021-03-27', 'NTU Sports Center'),
 ('Fancy Frontier 40', '2021-05-01', 'Taipei EXPO Park'),
-('TAIPEI GAME SHOW 2021', '2020-12-23', 'Taipei Nangang Exhibition Center');
+('TAIPEI GAME SHOW 2021', '2020-12-23', 'Taipei Nangang Exhibition Center'),
+('creativexpo 2021', '2021-04-16', 'Songshan Cultural and Creative Park');
 
 INSERT INTO animatedMovie VALUES
 ('Raya and the Last Dragon', 8.1, 'adventure'),
@@ -216,7 +218,8 @@ INSERT INTO sponsor VALUES
 INSERT INTO attend VALUES
 ('Fancy Frontier 40', 0, 1),
 ('Comic World Taiwan 54', 1, 5),
-('TAIPEI GAME SHOW 2021', 2, 2);
+('TAIPEI GAME SHOW 2021', 2, 2),
+('Fancy Frontier 40', 3, 2);
 
 INSERT INTO workOn VALUES
 ('Jaiden Dittfach', 'Big Hero 6', 'art director'),
@@ -286,10 +289,36 @@ GROUP BY characters.Gender
 	HAVING NumberOfPeople > 1;
 
 /* in */
+SELECT ExhibitorID, EventName, Theme, StallNumber
+FROM exhibitor
+WHERE Theme IN ('comic', 'video game');
+
 /* in 2 */
+SELECT ExhibitorID, EventName, Theme, StallNumber
+FROM exhibitor
+WHERE ExhibitorID IN 
+	(SELECT ExhibitorID
+		FROM artist);
+
 /* correlated nested query */
+SELECT ExhibitorID, EventName, Theme, StallNumber
+FROM exhibitor as E
+WHERE ExhibitorID IN 
+	(SELECT ExhibitorID
+		FROM attend AS A
+		WHERE E.EventName = A.EventName AND A.Attendance < 3);
+
 /* correlated nested query 2 */
+SELECT ExhibitorID, EventName, Theme, StallNumber
+FROM exhibitor as E
+WHERE EXISTS
+	(SELECT *
+		FROM attend AS A
+		WHERE E.EventName = A.EventName);
+
 /* bonus 1 */
+
+
 /* bonus 2 */
 /* bonus 3 */
 
