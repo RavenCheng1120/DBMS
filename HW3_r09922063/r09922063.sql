@@ -317,10 +317,25 @@ WHERE EXISTS
 		WHERE E.EventName = A.EventName);
 
 /* bonus 1 */
-
+SELECT freelancer.ArtistName, freelancer.Income, freelancer.StudioLocation, illustrator.RepresentativeWork, illustrator.Expertise
+FROM freelancer
+	LEFT OUTER JOIN illustrator
+ON freelancer.ArtistName = illustrator.ArtistName;
 
 /* bonus 2 */
+SELECT Nationality, COUNT(*) AS NumberOfPeople, MAX(ArtistAge) AS OldestAge, MIN(Salary) AS MinimalSalary
+FROM artist
+	NATURAL JOIN fullTimeArtist
+GROUP BY Nationality
+HAVING NumberOfPeople > 2;
+
 /* bonus 3 */
+SELECT *
+FROM artist
+WHERE NOT EXISTS
+	(SELECT *
+		FROM exhibitor
+		WHERE artist.ExhibitorID = exhibitor.ExhibitorID);
 
 /***** drop database *****/
 DROP DATABASE ArtBusiness;
