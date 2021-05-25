@@ -66,8 +66,9 @@ DROP PROCEDURE IF EXISTS `Wilcoxon`//
 CREATE PROCEDURE `Wilcoxon`(IN table1 varchar(25), IN table2 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25))
 	BEGIN
 		-- set up variables
-		DECLARE counter INT DEFAULT 1;
 		DECLARE totalRowNumber INT DEFAULT 1;
+		DECLARE negativeM FLOAT DEFAULT 0;
+		DECLARE positiveM FLOAT DEFAULT 0;
 
 		DROP TEMPORARY TABLE IF EXISTS `TempTable`;
 		DROP TABLE IF EXISTS `RankTable`;
@@ -94,17 +95,15 @@ CREATE PROCEDURE `Wilcoxon`(IN table1 varchar(25), IN table2 varchar(25), IN col
 
 		ALTER TABLE RankTable ORDER BY Absolute ASC;
 
-		-- Set default rank and count rows
-		SET counter = 1;
+		--  count rows
 		SELECT COUNT(*)
 		INTO totalRowNumber
 		FROM RankTable;
 
+		-- Set default rank
 		SET @var:=0;
 		UPDATE RankTable SET Ranking=(@var:=@var+1) ORDER BY Absolute ASC;
 		ALTER TABLE RankTable AUTO_INCREMENT=1; 
-
-		SELECT * FROM RankTable ORDER BY Absolute ASC;
 
 
 		-- Group the same value together for the ranking
@@ -123,6 +122,19 @@ CREATE PROCEDURE `Wilcoxon`(IN table1 varchar(25), IN table2 varchar(25), IN col
 
 		SELECT * FROM RankTable ORDER BY Absolute ASC;
 
+		-- Select ranking if its difference is negative (M-)
+		SELECT SUM(rt.Ranking) INTO negativeM
+		FROM RankTable AS rt
+		WHERE rt.Difference < 0;
+
+		-- Select ranking if its difference is positive (M+)
+		SELECT SUM(rt.Ranking) INTO positiveM
+		FROM RankTable AS rt
+		WHERE rt.Difference > 0;
+
+		SELECT positiveM;
+		SELECT negativeM;
+		
 		DROP TEMPORARY TABLE TempTable;
 		DROP TABLE RankTable;
 	END//
