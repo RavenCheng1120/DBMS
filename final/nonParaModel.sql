@@ -182,8 +182,7 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		EXECUTE stmt2;
 		DEALLOCATE PREPARE stmt2;
 
-		SELECT *
-		FROM TempTable;
+		
 
 	END//
 DELIMITER ;
