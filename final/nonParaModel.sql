@@ -75,12 +75,11 @@ VALUES
 -- Calculate difference between two values
 DELIMITER //
 CREATE FUNCTION Diff(param1 float, param2 float) RETURNS float DETERMINISTIC
-
-BEGIN
-DECLARE difference float;
-SET difference = param2 - param1;
-RETURN difference;
-END //
+	BEGIN
+	DECLARE difference float;
+	SET difference = param2 - param1;
+	RETURN difference;
+	END //
 
 -- Wilconxon algorithm
 DROP PROCEDURE IF EXISTS `Wilcoxon`//
@@ -162,6 +161,38 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 	END//
 
 
+DELIMITER //
+CREATE FUNCTION RankRow(col1 float, col2 float, col3 float) RETURNS float DETERMINISTIC
+	BEGIN
+	DECLARE rankNumber float;
+		IF col1 < col2 THEN
+			IF col1 < col3 THEN
+				SET rankNumber = 1;
+			ELSEIF col1 > col3 THEN
+				SET rankNumber = 2;
+			ELSEIF col1 = col3 THEN
+				SET rankNumber = 1.5;
+			END IF;
+		ELSEIF col1 > col2 THEN
+			IF col1 < col3 THEN
+				SET rankNumber = 2;
+			ELSEIF col1 > col3 THEN
+				SET rankNumber = 3;
+			ELSEIF col1 = col3 THEN
+				SET rankNumber = 2.5;
+			END IF;
+		ELSEIF col1 = col2 THEN
+			IF col1 < col3 THEN
+				SET rankNumber = 1.5;
+			ELSEIF col1 > col3 THEN
+				SET rankNumber = 2.5;
+			ELSEIF col1 = col3 THEN
+				SET rankNumber = 2;
+			END IF;
+		END IF;
+	RETURN rankNumber;
+	END //
+
 -- Friedman's ANOVA
 DROP PROCEDURE IF EXISTS `Friedman`//
 CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2 varchar(25), IN table3 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25), IN columnName3 varchar(25))
@@ -170,19 +201,25 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		DROP TABLE IF EXISTS `RankTable`;
 		CREATE TABLE RankTable(
 			UserID int NOT NULL,
-			Difference float,
-			Absolute float,
-			Ranking float,
+			Ranking1 float DEFAULT 1,
+			Ranking2 float DEFAULT 2,
+			Ranking3 float DEFAULT 3,
 			PRIMARY KEY(UserID)
 		);
 
 		-- Get difference between column1 and column2
-		SET @statement2 = CONCAT('CREATE TEMPORARY TABLE TempTable SELECT t1.', uid ,' AS UID, t1.', columnName1, ' AS column1, t2.', columnName2, ' AS column2, t3.', columnName3, ' AS column3 FROM ', table1, ' AS t1, ', table2, ' AS t2, ', table3, ' AS t3 WHERE t1.', uid ,' = t2.', uid ,' AND t1.', uid ,' = t3.', uid ,';');
+		SET @statement2 = CONCAT('CREATE TEMPORARY TABLE TempTable SELECT t1.', uid ,' AS UserID, t1.', columnName1, ' AS column1, t2.', columnName2, ' AS column2, t3.', columnName3, ' AS column3 FROM ', table1, ' AS t1, ', table2, ' AS t2, ', table3, ' AS t3 WHERE t1.', uid ,' = t2.', uid ,' AND t1.', uid ,' = t3.', uid ,';');
 		PREPARE stmt2 FROM @statement2;
 		EXECUTE stmt2;
 		DEALLOCATE PREPARE stmt2;
 
-		
+		SELECT * FROM TempTable;
+
+		INSERT INTO RankTable(UserID, Ranking1, Ranking2, Ranking3)
+		SELECT UserID, RankRow(column1, column2, column3) AS r1, RankRow(column2, column1, column3) AS r2, RankRow(column3, column2, column1) AS r3
+		FROM TempTable;
+
+		SELECT * FROM RankTable;
 
 	END//
 DELIMITER ;
