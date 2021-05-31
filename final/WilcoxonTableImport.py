@@ -8,7 +8,7 @@ def connect_To_DB():
 			host='localhost',    # 主機名稱
 			database = 'statisticsdb', #資料庫
 			user='root',         # 帳號
-			password='123qweasd')  # 密碼
+			password='****')  # 密碼
 
 		cursor = connection.cursor()
 		data_insert(cursor, connection)

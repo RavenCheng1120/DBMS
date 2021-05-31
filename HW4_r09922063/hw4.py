@@ -9,7 +9,7 @@ def connect_to_DB():
 			host='localhost',    # 主機名稱
 			database = 'DB_class', #資料庫
 			user='root',         # 帳號
-			password='123qweasd')  # 密碼
+			password='****')  # 密碼
 
 		cursor = connection.cursor()
 		cursor_prep = connection.cursor(cursor_class=MySQLCursorPrepared)
