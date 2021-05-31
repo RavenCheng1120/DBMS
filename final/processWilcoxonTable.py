@@ -38,8 +38,7 @@ if __name__ == '__main__':
 	count = 1
 	for r in pData.iterrows():
 		columnName.append(r[1][0])
-		prev = 0
-		current = 0
+		prev, current, rowNum = 0, 0, 0
 		for i in range(1,originalColumnNumber):
 			current = r[1][i]
 			# special process the last column
@@ -54,6 +53,15 @@ if __name__ == '__main__':
 			prev = current
 		count = count+1
 
+	# Fill in the -1 sluts with the upper bound value
+	for c in range(1, outputData.shape[1]):
+		prev = 1.0
+		for r in range(outputData.shape[0]-1, 0, -1):
+			if outputData[r,c] == -1.0:
+				outputData[r,c] = prev
+			else:
+				prev = outputData[r,c]
 
+	# output the csv file
 	NewWilcoxonTable = pd.DataFrame(outputData, columns = ([-1]+columnName))
 	NewWilcoxonTable.to_csv('NewWilcoxonTable.csv', index=False)

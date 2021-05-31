@@ -11,7 +11,7 @@ def connect_To_DB():
 			password='123qweasd')  # 密碼
 
 		cursor = connection.cursor()
-		data_insert(cursor, connection)		
+		data_insert(cursor, connection)
 
 	except Error as e:
 		print("Database connect fail：", e)
@@ -25,12 +25,35 @@ def connect_To_DB():
 
 def data_insert(cursor, connection):
 	cursor.execute("USE statisticsdb")
-	cursor.execute("DROP TABLE IF EXISTS wilcoxonPTable")
+	cursor.execute("DROP TABLE IF EXISTS Wilconxon_p_table")
 
-	pData = pd.read_csv('wilcoxonTable.csv')
-	pData_transposed = pData.transpose()
+	rowData = []
+	pData = pd.read_csv('NewWilcoxonTable.csv')
+	# print(pData.shape) #(3168, 98)
+	for row in pData:
+		rowData.append(row)
+	rowData = rowData[1:]
 
-	print(pData_transposed.dtypes)
+	# Create Table: 100 columns
+	columnString = "CREATE TABLE Wilconxon_p_table (R_Value FLOAT NOT NULL, "
+	for columnName in rowData:
+		columnName = columnName.replace(".0", "")
+		if columnName != '100':
+			columnString += f"N_{columnName} FLOAT, "
+		else:
+			columnString += f"N_{columnName} FLOAT, PRIMARY KEY (R_Value))"
+	cursor.execute(columnString)
+	connection.commit()
+
+	for r in pData.iterrows():
+		insertString = "INSERT INTO Wilconxon_p_table VALUES ("
+		for idx in range(0, pData.shape[1]):
+			if idx == pData.shape[1]-1:
+				insertString += f"{r[1][idx]})"
+			else:
+				insertString += f"{r[1][idx]}, "
+		cursor.execute(insertString)
+		connection.commit()
 
 
 if __name__ == '__main__':
