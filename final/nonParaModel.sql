@@ -1,75 +1,77 @@
+# source /Users/patty/GraduateFiles/DBMS/Homework/final/nonParaModel.sql
+
 /***** create and use database *****/
-CREATE DATABASE StatDB;
-USE StatDB;
+-- CREATE DATABASE statisticsdb;
+-- USE statisticsdb;
 
-CREATE TABLE conditionA (
-    UserNum int NOT NULL,
-    Enjoyment int NOT NULL,
-    Realism int NOT NULL,
-    Immersion int NOT NULL,
-    PRIMARY KEY (UserNum)
-);
+-- CREATE TABLE conditionA (
+--     UserNum int NOT NULL,
+--     Enjoyment int NOT NULL,
+--     Realism int NOT NULL,
+--     Immersion int NOT NULL,
+--     PRIMARY KEY (UserNum)
+-- );
 
-CREATE TABLE conditionB (
-    UserNum int NOT NULL,
-    Enjoyment int NOT NULL,
-    Realism int NOT NULL,
-    Immersion int NOT NULL,
-    PRIMARY KEY (UserNum)
-);
+-- CREATE TABLE conditionB (
+--     UserNum int NOT NULL,
+--     Enjoyment int NOT NULL,
+--     Realism int NOT NULL,
+--     Immersion int NOT NULL,
+--     PRIMARY KEY (UserNum)
+-- );
 
-CREATE TABLE conditionC (
-    UserNum int NOT NULL,
-    Enjoyment int NOT NULL,
-    Realism int NOT NULL,
-    Immersion int NOT NULL,
-    PRIMARY KEY (UserNum)
-);
+-- CREATE TABLE conditionC (
+--     UserNum int NOT NULL,
+--     Enjoyment int NOT NULL,
+--     Realism int NOT NULL,
+--     Immersion int NOT NULL,
+--     PRIMARY KEY (UserNum)
+-- );
 
-INSERT INTO conditionA
-VALUES
-(0, 2, 1, 2),
-(1, 3, 3, 4),
-(2, 4, 4, 4),
-(3, 4, 3, 3),
-(4, 3, 3, 3),
-(5, 3, 1, 1),
-(6, 4, 4, 4),
-(7, 2, 5, 4),
-(8, 5, 6, 7),
-(9, 3, 3, 3),
-(10, 4, 4, 4),
-(11, 4, 1, 1);
+-- INSERT INTO conditionA
+-- VALUES
+-- (0, 2, 1, 2),
+-- (1, 3, 3, 4),
+-- (2, 4, 4, 4),
+-- (3, 4, 3, 3),
+-- (4, 3, 3, 3),
+-- (5, 3, 1, 1),
+-- (6, 4, 4, 4),
+-- (7, 2, 5, 4),
+-- (8, 5, 6, 7),
+-- (9, 3, 3, 3),
+-- (10, 4, 4, 4),
+-- (11, 4, 1, 1);
 
-INSERT INTO conditionB
-VALUES
-(0, 5, 5, 6),
-(1, 4, 4, 4),
-(2, 1, 2, 3),
-(3, 5, 5, 5),
-(4, 4, 5, 5),
-(5, 4, 2, 2),
-(6, 5, 4, 4),
-(7, 1, 5, 6),
-(8, 2, 5, 5),
-(9, 5, 6, 6),
-(10, 7, 7, 7),
-(11, 4, 3, 3);
+-- INSERT INTO conditionB
+-- VALUES
+-- (0, 5, 5, 6),
+-- (1, 4, 4, 4),
+-- (2, 1, 2, 3),
+-- (3, 5, 5, 5),
+-- (4, 4, 5, 5),
+-- (5, 4, 2, 2),
+-- (6, 5, 4, 4),
+-- (7, 1, 5, 6),
+-- (8, 2, 5, 5),
+-- (9, 5, 6, 6),
+-- (10, 7, 7, 7),
+-- (11, 4, 3, 3);
 
-INSERT INTO conditionC
-VALUES
-(0, 6, 6, 6),
-(1, 6, 6, 6),
-(2, 6, 5, 6),
-(3, 6, 6, 6),
-(4, 6, 6, 6),
-(5, 5, 6, 6),
-(6, 6, 6, 6),
-(7, 4, 3, 5),
-(8, 4, 5, 7),
-(9, 7, 6, 6),
-(10, 7, 6, 6),
-(11, 5, 3, 3);
+-- INSERT INTO conditionC
+-- VALUES
+-- (0, 6, 6, 6),
+-- (1, 6, 6, 6),
+-- (2, 6, 5, 6),
+-- (3, 6, 6, 6),
+-- (4, 6, 6, 6),
+-- (5, 5, 6, 6),
+-- (6, 6, 6, 6),
+-- (7, 4, 3, 5),
+-- (8, 4, 5, 7),
+-- (9, 7, 6, 6),
+-- (10, 7, 6, 6),
+-- (11, 5, 3, 3);
 
 /***** Store Function and Store Procedure *****/
 -- Calculate difference between two values
@@ -89,6 +91,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		DECLARE totalRowNumber INT DEFAULT 1;
 		DECLARE negativeM FLOAT DEFAULT 0;
 		DECLARE positiveM FLOAT DEFAULT 0;
+		DECLARE rValue FLOAT DEFAULT 0;
 
 		DROP TEMPORARY TABLE IF EXISTS `TempTable`;
 		DROP TABLE IF EXISTS `RankTable`;
@@ -121,6 +124,8 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		INTO totalRowNumber
 		FROM RankTable;
 
+		SELECT totalRowNumber;
+
 		-- Set default rank
 		SET @var:=0;
 		UPDATE RankTable SET Ranking=(@var:=@var+1) ORDER BY Absolute ASC;
@@ -134,7 +139,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		GROUP BY rt.Absolute
 		ORDER BY AbsoluteGroup;
 
-		SELECT * FROM TempTable;
+		-- SELECT * FROM TempTable;
 
 		-- Update the ranking
 		UPDATE RankTable AS rt, (SELECT * FROM TempTable) AS tempt
@@ -153,8 +158,14 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		FROM RankTable AS rt
 		WHERE rt.Difference > 0;
 
-		SELECT positiveM;
-		SELECT negativeM;
+		-- Choose the smaller number as R
+		IF positiveM > negativeM THEN
+			SET rValue = negativeM;
+		ELSEIF positiveM <= negativeM THEN
+			SET rValue = positiveM;
+		END IF;
+
+		SELECT rValue;
 		
 		DROP TEMPORARY TABLE TempTable;
 		DROP TABLE RankTable;
@@ -256,14 +267,16 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 
 		SELECT tValue2 AS T2;
 
+		DROP TEMPORARY TABLE TempTable;
+		DROP TABLE RankTable;
 	END//
 DELIMITER ;
 
 
 /***** main *****/
--- CALL Wilcoxon('UserNum', 'conditionA', 'conditionC', 'Enjoyment', 'Enjoyment');
-CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Enjoyment', 'Enjoyment', 'Enjoyment');
+CALL Wilcoxon('UserNum', 'conditionA', 'conditionC', 'Enjoyment', 'Enjoyment');
+-- CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Enjoyment', 'Enjoyment', 'Enjoyment');
 
 
 /***** drop database *****/
-DROP DATABASE StatDB;
+-- DROP DATABASE statisticsdb;
