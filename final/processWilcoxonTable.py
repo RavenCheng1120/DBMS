@@ -29,38 +29,6 @@ if __name__ == '__main__':
 	rowName = list(sortedHashMap.keys())
 	# sortedHashMap = {value:key for key, value in sortedHashMap.items()}
 
-	# # Create the numpy array for the result csv. Enter the first column value.
-	# outputData = np.full((len(rowName)+1,originalRowNumber+1), -1, dtype=float) # outputData.shape is (3168, 98)
-	# for r in range(1,outputData.shape[0]):
-	# 	outputData[r,0] = rowName[r-1]
-
-
-	# count = 1
-	# for r in pData.iterrows():
-	# 	columnName.append(r[1][0])
-	# 	prev = 0
-	# 	current = 0
-	# 	for i in range(1,originalColumnNumber):
-	# 		current = r[1][i]
-	# 		# special process the last column
-	# 		if i == originalColumnNumber-1:
-	# 			rowNum = sortedHashMap[current]
-	# 			outputData[int(rowNum)+1, count] = (i-1)/1000
-	# 			continue
-	# 		# use the roof r value to get p value
-	# 		if current != prev:
-	# 			rowNum = sortedHashMap[prev]
-	# 			outputData[int(rowNum)+1, count] = (i-2)/1000
-	# 		prev = current
-	# 	count = count+1
-
-
-	# for c in range(1,outputData.shape[1]):
-	# 	outputData[0,c] = columnName[c-1]
-	# # print(outputData)
-
-
-
 	# Create the numpy array for the result csv. Enter the first column value.
 	outputData = np.full((len(rowName),originalRowNumber+1), -1, dtype=float) # outputData.shape is (3168, 98)
 	for r in range(0,outputData.shape[0]):
