@@ -1,0 +1,15 @@
+
+A, B
+Enjoyment: 0.116
+Realism: 0.012 
+Immersion: 0.009
+
+A, C
+Enjoyment: 0.001
+Realism: 0.002
+Immersion: 0.001
+
+B, C
+Enjoyment: 0.001
+Realism: 0.032
+Immersion: 0.013

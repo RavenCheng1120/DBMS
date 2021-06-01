@@ -92,6 +92,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		DECLARE negativeM FLOAT DEFAULT 0;
 		DECLARE positiveM FLOAT DEFAULT 0;
 		DECLARE rValue FLOAT DEFAULT 0;
+		DECLARE pColumnName varchar(20);
 
 		DROP TEMPORARY TABLE IF EXISTS `TempTable`;
 		DROP TABLE IF EXISTS `RankTable`;
@@ -146,7 +147,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		SET rt.Ranking = tempt.TiedRank
 		WHERE tempt.AbsoluteGroup = rt.Absolute;
 
-		SELECT * FROM RankTable ORDER BY Absolute ASC;
+		-- SELECT * FROM RankTable ORDER BY Absolute ASC;
 
 		-- Select ranking if its difference is negative (M-)
 		SELECT SUM(rt.Ranking) INTO negativeM
@@ -165,7 +166,16 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 			SET rValue = positiveM;
 		END IF;
 
-		SELECT rValue;
+		SELECT rValue; 
+
+		SET pColumnName = concat('N', '_', CAST(totalRowNumber AS CHAR(5)));
+		SET @prepS = CONCAT('SELECT Min(', pColumnName, ') AS p FROM Wilconxon_p_table WHERE R_Value > ', rValue);
+		PREPARE stmt FROM @prepS;
+		EXECUTE stmt;
+
+		-- SELECT Min(pColumnName)
+		-- FROM Wilconxon_p_table
+		-- WHERE R_Value > rValue;
 		
 		DROP TEMPORARY TABLE TempTable;
 		DROP TABLE RankTable;
@@ -274,7 +284,7 @@ DELIMITER ;
 
 
 /***** main *****/
-CALL Wilcoxon('UserNum', 'conditionA', 'conditionC', 'Enjoyment', 'Enjoyment');
+CALL Wilcoxon('UserNum', 'conditionB', 'conditionC', 'Immersion', 'Immersion');
 -- CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Enjoyment', 'Enjoyment', 'Enjoyment');
 
 
