@@ -76,6 +76,7 @@
 /***** Store Function and Store Procedure *****/
 -- Calculate difference between two values
 DELIMITER //
+DROP FUNCTION IF EXISTS `Diff`//
 CREATE FUNCTION Diff(param1 float, param2 float) RETURNS float DETERMINISTIC
 	BEGIN
 	DECLARE difference float;
@@ -85,7 +86,7 @@ CREATE FUNCTION Diff(param1 float, param2 float) RETURNS float DETERMINISTIC
 
 -- Wilconxon algorithm
 DROP PROCEDURE IF EXISTS `Wilcoxon`//
-CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25))
+CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25), OUT p FLOAT(4,3))
 	BEGIN
 		-- set up variables
 		DECLARE totalRowNumber INT DEFAULT 1;
@@ -118,6 +119,8 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 
 		DROP TEMPORARY TABLE TempTable;
 
+		-- SELECT * FROM RankTable;
+
 		ALTER TABLE RankTable ORDER BY Absolute ASC;
 
 		--  count rows
@@ -125,7 +128,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		INTO totalRowNumber
 		FROM RankTable;
 
-		SELECT totalRowNumber;
+		-- SELECT totalRowNumber;
 
 		-- Set default rank
 		SET @var:=0;
@@ -166,13 +169,16 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 			SET rValue = positiveM;
 		END IF;
 
-		SELECT rValue; 
+
+		-- SELECT rValue; 
 
 		SET pColumnName = concat('N', '_', CAST(totalRowNumber AS CHAR(5)));
-		SET @prepS = CONCAT('SELECT Min(', pColumnName, ') AS p FROM Wilconxon_p_table WHERE R_Value > ', rValue);
+		SET @result_p := 1.11;
+		SET @prepS = CONCAT('SELECT Min(', pColumnName, ') INTO @result_p FROM Wilconxon_p_table WHERE R_Value >= ', rValue);
 		PREPARE stmt FROM @prepS;
 		EXECUTE stmt;
 
+		SELECT @result_p INTO p;
 		-- SELECT Min(pColumnName)
 		-- FROM Wilconxon_p_table
 		-- WHERE R_Value > rValue;
@@ -183,6 +189,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 
 
 DELIMITER //
+DROP FUNCTION IF EXISTS `RankRow`//
 CREATE FUNCTION RankRow(col1 float, col2 float, col3 float) RETURNS float DETERMINISTIC
 	BEGIN
 	DECLARE rankNumber float;
@@ -216,7 +223,7 @@ CREATE FUNCTION RankRow(col1 float, col2 float, col3 float) RETURNS float DETERM
 
 -- Friedman's ANOVA
 DROP PROCEDURE IF EXISTS `Friedman`//
-CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2 varchar(25), IN table3 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25), IN columnName3 varchar(25))
+CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2 varchar(25), IN table3 varchar(25), IN columnName1 varchar(25), IN columnName2 varchar(25), IN columnName3 varchar(25), OUT p FLOAT(4,3))
 	BEGIN
 		DECLARE sumCol1 FLOAT DEFAULT 0;
 		DECLARE sumCol2 FLOAT DEFAULT 0;
@@ -250,7 +257,7 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		SELECT UserID, RankRow(column1, column2, column3) AS r1, RankRow(column2, column1, column3) AS r2, RankRow(column3, column2, column1) AS r3
 		FROM TempTable;
 
-		SELECT * FROM RankTable;
+		-- SELECT * FROM RankTable;
 
 		-- summed rank in each column
 		SELECT SUM(Ranking1), SUM(Ranking2), SUM(Ranking3)
@@ -275,7 +282,15 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		-- calculate T2 using T1
 		SET tValue2 = ((totalRowNumber-1)*tValue1) / (totalRowNumber*(3-1) - tValue1);
 
-		SELECT tValue2 AS T2;
+		-- SELECT tValue2 AS T2;
+
+		SET @pColumnName = concat('N', '_', CAST(totalRowNumber AS CHAR(5)));
+		SET @result_p := 1.11;
+		SET @prepS = CONCAT('SELECT Count(', @pColumnName, ')*0.001 INTO @result_p FROM Friedman_p_table WHERE ', @pColumnName, ' > ', tValue2,'');
+		PREPARE stmt FROM @prepS;
+		EXECUTE stmt;
+
+		SELECT @result_p INTO p;
 
 		DROP TEMPORARY TABLE TempTable;
 		DROP TABLE RankTable;
@@ -284,8 +299,10 @@ DELIMITER ;
 
 
 /***** main *****/
-CALL Wilcoxon('UserNum', 'conditionB', 'conditionC', 'Immersion', 'Immersion');
--- CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Enjoyment', 'Enjoyment', 'Enjoyment');
+-- CALL Wilcoxon('UserNum', 'conditionA', 'conditionC', 'Immersion', 'Immersion', @Wilcoxon_p);
+-- SELECT TRUNCATE(@Wilcoxon_p,3) AS p;
+CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Realism', 'Realism', 'Realism', @Friedman_p);
+SELECT TRUNCATE(@Friedman_p,3) AS p;
 
 
 /***** drop database *****/
