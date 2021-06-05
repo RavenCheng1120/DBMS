@@ -12,9 +12,9 @@ Based on the ER model and relational database you built in Homework 1 and 2 , we
 
 In this homework, you need to write a Python program and write SQL statement inside the Python program to complete various tasks. You should need mysql.connector as your mySQL connection package.
 
-## Homework 6 - MongoDB
+## Homework 6 - MongoDB & Neo4j
 
-### Basic instruction
+### MongoDB Basic instruction
 
 1. Start MongoDB server
 
@@ -104,3 +104,69 @@ updateSessionStats = function(startDate) {
 ```
 
 Task 6 Ref: https://stackoverflow.com/questions/42456436/mongodb-aggregate-nested-group
+
+
+
+### Neo4j installation
+
+Download the free community edition neo4j **tar** file [here](https://neo4j.com/download-center/#community). Unzip the file, and run `./bin/neo4j console` for Mac OS.
+
+If it shows an error for <u>Unable to find any JVMs matching version "11"</u>, installing OpenJDK 11 with `brew install openjdk@11`. And then symlink with `sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk`. Reference: https://community.neo4j.com/t/unable-to-find-any-jvms-matching-version-11/18183/4
+
+Once the server starts running, visit remote interface at http://localhost:7474/ in web browser. Default login is **username 'neo4j'** and **password 'neo4j'**.
+
+
+
+### Neo4j Shell and Cypher
+
+1. helps
+
+```she
+$ :help commands
+$ :help server
+$ :server status
+```
+
+2. Load csv file
+
+   Neo4j security has a default setting that local files can only be read from the Neo4j **import directory**.
+
+```cypher
+LOAD CSV FROM "file:///hw6_student_data.csv" AS line
+RETURN line
+LIMIT 10
+```
+
+> Creating databases is only available at Enterprise Edition.
+
+3. SELECT
+
+```cypher
+MATCH (n:Student {學號: 'r09922063'}) RETURN n
+//or
+MATCH (n:Student) WHERE n.系所 = '資工系碩士班_一年級 ' RETURN n
+```
+
+4. Create relationship
+
+```cypher
+MATCH (a:Student {學號: 'r09922063'}),(b:Student {系所: '資工系碩士班_一年級 '})
+WHERE b.學號 <> 'r09922063'
+CREATE (a)-[r:peer]->(b)
+RETURN type(r)
+```
+
+5. Delete relationship
+
+```cypher
+MATCH (a:Student {學號: 'r09922063'})-[r:peer]-(b:Student {系所: '資工系碩士班_一年級 '})
+DELETE r
+```
+
+6. Return list of nodes
+
+```cypher
+MATCH (s:Student {系所: '資工系碩士班_一年級 '})
+RETURN COLLECT(s)
+```
+

@@ -1,0 +1,18 @@
+[Task 1]
+$ CREATE CONSTRAINT studentIdConstraint ON (s:Student) ASSERT s.學號 IS UNIQUE
+
+$ LOAD CSV WITH HEADERS FROM "file:///hw6_student_data.csv" AS csvLine
+CREATE (s:Student {身份: csvLine.身份, 系所: csvLine.系所, 學號: csvLine.學號, 姓名: csvLine.姓名})
+
+
+[Task 2]
+$ MATCH (a:Student {學號: 'r09922063'}),(b:Student {系所: '資工系碩士班_一年級 '})
+WHERE b.學號 <> 'r09922063'
+CREATE (a)-[r:peer]->(b)
+RETURN type(r)
+
+
+[Task 3]
+$ MATCH (s:Student {系所: '資工系碩士班_一年級 '})
+RETURN COLLECT(s)
+
