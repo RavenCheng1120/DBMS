@@ -1,0 +1,83 @@
+[Part I (MongoDB)]
+[Task 1]
+$ mongoimport -d DB_class -c students --type csv --file /Users/patty/GraduateFiles/DBMS/Homework/HW6_r09922063/hw6_student_data.csv --headerline
+
+
+[Task 2]
+$ mongo
+> use DB_class
+> db.students.find({ 
+	$or: [
+		{ 系所:"資工系碩士班_一年級", 學號:"r09922063" }, 
+		{ 系所:"資工系碩士班_一年級", 學號:{ $ne:"r09922063" }}  
+	] 
+}).pretty();
+
+
+[Task 3]
+> db.students.aggregate([{ 
+	$group: { 
+		_id: "$系所", 
+		number: { $sum : 1 } 
+	} 
+}]);
+
+
+[Task 4]
+> db.students.updateMany( {}, { $set: { 日期: "2021-03-01" } }, false, true )
+> db.students.find({ 系所:"資工系碩士班_一年級", 學號:"r09922063" }).pretty()
+> db.students.find({ 系所:"資工系碩士班_一年級", 學號:{ $ne:"r09922063" } }).sort({ 學號: 1 }).pretty()
+
+
+[Task 5]
+> db.students.insertMany([
+	{ 日期: "2021-06-02", 身份: "旁聽生", 系所: "歷史系_一年級", 學號: "b09900201", 姓名: "小花" },
+	{ 日期: "2021-06-02", 身份: "校內生", 系所: "歷史系_四年級", 學號: "b06900332", 姓名: "小草" },
+	{ 日期: "2021-06-02", 身份: "校內生", 系所: "機械系_四年級", 學號: "b06502055", 姓名: "小天" }
+]);
+> db.students.find({ $or: [ { 系所:"資工系碩士班_一年級", 學號:"r09922063" }, { 日期: "2021-06-02" } ] }).pretty();
+
+
+[Task 6_save as collection]
+> var mapFunction = function() {
+	emit( this.系所, this.學號 );
+};
+
+> var reduceFunction = function(key, values) {
+	var counter = 0;
+	values.forEach(function(value) {
+		counter += 1;
+	});
+	return counter;
+};
+
+
+> db.students.mapReduce(
+	mapFunction,
+	reduceFunction,
+	{
+		query: { 日期: { $lte: "2021-06-10" } },
+		out: "studentsT6"
+	}
+)
+
+> db.studentsT6.find({}).pretty();
+
+
+[Task 6]
+> studentNumber = function(startDate) {
+	db.students.aggregate([
+		{ $match: { 日期: { $lte: startDate } } },
+		{ $group: { _id: {系所:"$系所"}, count: { $sum: 1 } } },
+		{ $group: { _id: null, DEPT_GROUP: { $push: { dept: "$_id.系所", number: "$count" } } } },
+		{ $project: { _id: "tally", dept_group: "$DEPT_GROUP" } },
+		{ $merge: {
+			into: "students",
+			whenMatched: "replace",
+			whenNotMatched: "insert"
+		}}
+	]);
+};
+
+> studentNumber("2021-03-31");
+> studentNumber("2021-06-10");
