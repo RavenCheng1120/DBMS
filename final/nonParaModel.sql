@@ -111,6 +111,8 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		EXECUTE stmt1;
 		DEALLOCATE PREPARE stmt1;
 
+		-- SELECT * FROM TempTable;
+
 		-- Get absolute difference value & remove 0
 		INSERT INTO RankTable(UserID, Difference, Absolute)
 		SELECT UserID, Difference, ABS(Difference)
@@ -119,9 +121,7 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 
 		DROP TEMPORARY TABLE TempTable;
 
-		-- SELECT * FROM RankTable;
-
-		ALTER TABLE RankTable ORDER BY Absolute ASC;
+		-- ALTER TABLE RankTable ORDER BY Absolute ASC;
 
 		--  count rows
 		SELECT COUNT(*)
@@ -134,6 +134,8 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		SET @var:=0;
 		UPDATE RankTable SET Ranking=(@var:=@var+1) ORDER BY Absolute ASC;
 		ALTER TABLE RankTable AUTO_INCREMENT=1; 
+
+		-- SELECT * FROM RankTable;
 
 
 		-- Group the same value together for the ranking
@@ -162,12 +164,17 @@ CREATE PROCEDURE `Wilcoxon`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		FROM RankTable AS rt
 		WHERE rt.Difference > 0;
 
+		-- SELECT positiveM;
+		-- SELECT negativeM;
+
 		-- Choose the smaller number as R
 		IF positiveM > negativeM THEN
 			SET rValue = negativeM;
 		ELSEIF positiveM <= negativeM THEN
 			SET rValue = positiveM;
 		END IF;
+
+		SELECT rValue;
 
 
 		-- SELECT rValue; 
@@ -252,6 +259,8 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		EXECUTE stmt2;
 		DEALLOCATE PREPARE stmt2;
 
+		-- SELECT * FROM TempTable;
+
 		-- Rank each row: 1-3
 		INSERT INTO RankTable(UserID, Ranking1, Ranking2, Ranking3)
 		SELECT UserID, RankRow(column1, column2, column3) AS r1, RankRow(column2, column1, column3) AS r2, RankRow(column3, column2, column1) AS r3
@@ -282,6 +291,10 @@ CREATE PROCEDURE `Friedman`(IN uid varchar(25), IN table1 varchar(25), IN table2
 		-- calculate T2 using T1
 		SET tValue2 = ((totalRowNumber-1)*tValue1) / (totalRowNumber*(3-1) - tValue1);
 
+		-- SELECT powSum AS A;
+		-- SELECT totalRowNumber AS B;
+		-- SELECT cValue AS C;
+		-- SELECT tValue1 AS T1;
 		-- SELECT tValue2 AS T2;
 
 		SET @pColumnName = concat('N', '_', CAST(totalRowNumber AS CHAR(5)));
@@ -299,10 +312,10 @@ DELIMITER ;
 
 
 /***** main *****/
--- CALL Wilcoxon('UserNum', 'conditionA', 'conditionC', 'Immersion', 'Immersion', @Wilcoxon_p);
--- SELECT TRUNCATE(@Wilcoxon_p,3) AS p;
+-- CALL Wilcoxon('UserNum', 'conditionA', 'conditionB', 'Immersion', 'Immersion', @Wilcoxon_p);
+-- SELECT ROUND(@Wilcoxon_p,3) AS p;
 CALL Friedman('UserNum', 'conditionA', 'conditionB', 'conditionC', 'Realism', 'Realism', 'Realism', @Friedman_p);
-SELECT TRUNCATE(@Friedman_p,3) AS p;
+SELECT ROUND(@Friedman_p,3) AS p;
 
 
 /***** drop database *****/

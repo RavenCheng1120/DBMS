@@ -44,7 +44,6 @@ def data_insert(cursor, connection):
 	connection.commit()
 
 	for r in pData.iterrows():
-		print(r[1][0])
 		insertString = "INSERT INTO Friedman_p_table VALUES ("
 		for idx in range(0, pData.shape[1]):
 			if idx == pData.shape[1]-1:

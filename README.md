@@ -119,6 +119,8 @@ Once the server starts running, visit remote interface at http://localhost:7474/
 
 ### Neo4j Shell and Cypher
 
+[Tutorial link](https://neo4j.com/docs/cypher-manual/4.2/introduction/#cypher-intro)
+
 1. helps
 
 ```she
@@ -127,9 +129,21 @@ $ :help server
 $ :server status
 ```
 
-2. Load csv file
+2. Create 
 
-   Neo4j security has a default setting that local files can only be read from the Neo4j **import directory**.
+```cypher
+CREATE (john:Person {name: 'John'})
+CREATE (joe:Person {name: 'Joe'})
+CREATE (steve:Person {name: 'Steve'})
+CREATE (sara:Person {name: 'Sara'})
+CREATE (maria:Person {name: 'Maria'})
+CREATE (john)-[:FRIEND]->(joe)-[:FRIEND]->(steve)
+CREATE (john)-[:FRIEND]->(sara)-[:FRIEND]->(maria)
+```
+
+3. Load csv file
+
+Neo4j security has a default setting that local files can only be read from the Neo4j **import directory**.
 
 ```cypher
 LOAD CSV FROM "file:///hw6_student_data.csv" AS line
@@ -139,7 +153,7 @@ LIMIT 10
 
 > Creating databases is only available at Enterprise Edition.
 
-3. SELECT
+4. SELECT
 
 ```cypher
 MATCH (n:Student {學號: 'r09922063'}) RETURN n
@@ -147,7 +161,7 @@ MATCH (n:Student {學號: 'r09922063'}) RETURN n
 MATCH (n:Student) WHERE n.系所 = '資工系碩士班_一年級 ' RETURN n
 ```
 
-4. Create relationship
+5. Create relationship
 
 ```cypher
 MATCH (a:Student {學號: 'r09922063'}),(b:Student {系所: '資工系碩士班_一年級 '})
@@ -156,17 +170,44 @@ CREATE (a)-[r:peer]->(b)
 RETURN type(r)
 ```
 
-5. Delete relationship
+6. Delete relationship
 
 ```cypher
+// Delete particular relationship
 MATCH (a:Student {學號: 'r09922063'})-[r:peer]-(b:Student {系所: '資工系碩士班_一年級 '})
 DELETE r
+                                                           
+// Delete all relationship
+MATCH (n)-[r]-() DELETE r
 ```
 
-6. Return list of nodes
+7. Return list of nodes
 
 ```cypher
 MATCH (s:Student {系所: '資工系碩士班_一年級 '})
 RETURN COLLECT(s)
+```
+
+8. Delete all node
+
+```cypher
+MATCH (n) DELETE n
+```
+
+9. Remove constraint
+
+use `:Schema` to show constraint information.
+
+```cypher
+DROP CONSTRAINT ON (a:Student) ASSERT a.學號 IS UNIQUE
+```
+
+10. Use Merge instead of Create
+
+Merge: Create relationship if the relationship isn't exist.
+
+```cypher
+LOAD CSV WITH HEADERS FROM "file:///hw6_hobbies.csv" AS csvLine
+MERGE (:Student {學號: csvLine.學號, 姓名: csvLine.姓名})
 ```
 
