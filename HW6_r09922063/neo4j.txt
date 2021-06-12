@@ -99,3 +99,4 @@ $ MATCH (me:Student {學號: 'r09922063'})-[r1:foaf]->()-[r3:foaf]->(foafFF)--(f
 MATCH (me:Student {學號: 'r09922063'})--(myh:Hobby)
 WHERE foafFF.學號 <> 'r09922063' AND NOT foafFFh.hobby IN ['看電影', '聽音樂', '畫圖', '看遊戲實況', '逛展']
 RETURN DISTINCT(foafFFh)
+

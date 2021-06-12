@@ -1,17 +1,21 @@
 [Part I (MongoDB)]
 [Task 1]
 $ mongoimport -d DB_class -c students --type csv --file /Users/patty/GraduateFiles/DBMS/Homework/HW6_r09922063/hw6_student_data.csv --headerline
+$ mongo
+> use DB_class
+> db.students.find({學號:"r09922063"}).pretty();
 
 
 [Task 2]
-$ mongo
-> use DB_class
 > db.students.find({ 
 	$or: [
 		{ 系所:"資工系碩士班_一年級", 學號:"r09922063" }, 
 		{ 系所:"資工系碩士班_一年級", 學號:{ $ne:"r09922063" }}  
 	] 
 }).pretty();
+
+// Real answer
+> db.students.find({ 系所: "資工系碩士班_一年級" }).pretty();
 
 
 [Task 3]
@@ -29,6 +33,7 @@ $ mongo
 > db.students.find({ 系所:"資工系碩士班_一年級", 學號:{ $ne:"r09922063" } }).sort({ 學號: 1 }).pretty()
 
 
+
 [Task 5]
 > db.students.insertMany([
 	{ 日期: "2021-06-02", 身份: "旁聽生", 系所: "歷史系_一年級", 學號: "b09900201", 姓名: "小花" },
@@ -36,6 +41,7 @@ $ mongo
 	{ 日期: "2021-06-02", 身份: "校內生", 系所: "機械系_四年級", 學號: "b06502055", 姓名: "小天" }
 ]);
 > db.students.find({ $or: [ { 系所:"資工系碩士班_一年級", 學號:"r09922063" }, { 日期: "2021-06-02" } ] }).pretty();
+
 
 
 [Task 6_save as collection]
