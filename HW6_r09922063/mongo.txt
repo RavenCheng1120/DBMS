@@ -7,14 +7,6 @@ $ mongo
 
 
 [Task 2]
-> db.students.find({ 
-	$or: [
-		{ 系所:"資工系碩士班_一年級", 學號:"r09922063" }, 
-		{ 系所:"資工系碩士班_一年級", 學號:{ $ne:"r09922063" }}  
-	] 
-}).pretty();
-
-// Real answer
 > db.students.find({ 系所: "資工系碩士班_一年級" }).pretty();
 
 
@@ -42,32 +34,6 @@ $ mongo
 ]);
 > db.students.find({ $or: [ { 系所:"資工系碩士班_一年級", 學號:"r09922063" }, { 日期: "2021-06-02" } ] }).pretty();
 
-
-
-[Task 6_save as collection]
-> var mapFunction = function() {
-	emit( this.系所, this.學號 );
-};
-
-> var reduceFunction = function(key, values) {
-	var counter = 0;
-	values.forEach(function(value) {
-		counter += 1;
-	});
-	return counter;
-};
-
-
-> db.students.mapReduce(
-	mapFunction,
-	reduceFunction,
-	{
-		query: { 日期: { $lte: "2021-06-10" } },
-		out: "studentsT6"
-	}
-)
-
-> db.studentsT6.find({}).pretty();
 
 
 [Task 6]
