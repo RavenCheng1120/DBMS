@@ -78,7 +78,8 @@ WITH collect(distinct h1) as hobbies1
 MATCH (s2:Student {學號:'r09922063'})-[r2:foaf]->(ff)--(h2:Hobby)
 WITH hobbies1, ff, h2, collect(distinct h2) AS hobbies2
 WHERE NONE (h2 in hobbies2 where h2 in hobbies1)
-RETURN hobbies2, ff
+MATCH ()-[r3:foaf]->(myfoaf:Student)
+RETURN hobbies2,myfoaf
 
 
 [Task 3]
