@@ -35,6 +35,7 @@ MATCH (s:Student {學號: csvLine.學號}), (h:Hobby {hobby: csvLine.hobby1})
 MERGE (s)-[r:interestIn]->(h)
 
 
+
 [Pre-Task 2]
 // Find friends with same hobby
 $ MATCH (me:Student {學號: 'r09922063'})--(myh:Hobby)
@@ -47,14 +48,13 @@ $ MATCH p=()-[r1:hobbyFriends]->()
 MATCH x=(me:Student {學號: 'r09922063'})-[r2:interestIn]->() 
 RETURN p,x
 
+// Print me, my hobby, hobby friends, their interest
+MATCH p=()-[r1:hobbyFriends]->()--(ho:Hobby)
+MATCH x=(me:Student {學號: 'r09922063'})-[r2:interestIn]->() 
+RETURN p,x
 
-// Solutoin 1: Connect my friends to their own hobbyfriends
-$ MATCH (me:Student {學號: 'r09922063'})-[rHobbyF:hobbyFriends]->(friend:Student)--(friendh:Hobby)
-MATCH (foaf:Student)--(foafh:Hobby)
-WHERE foafh.hobby = friendh.hobby AND foaf.學號 <> 'r09922063'
-MERGE (friend)-[r:hobbyFriends]->(foaf)
 
-// Solution 2: Connect myself to the foaf
+// Connect myself to the foaf
 $ MATCH (me:Student {學號: 'r09922063'})-[rHobbyF:hobbyFriends]->(friend:Student)--(friendh:Hobby)
 MATCH (foaf:Student)--(foafh:Hobby)
 WHERE foafh.hobby = friendh.hobby AND foaf.學號 <> 'r09922063' AND NOT (me)-[:hobbyFriends]->(foaf)
@@ -66,37 +66,26 @@ RETURN p
 
 
 [Task 2]
-// print result -> without me
+// print result -> without me 
+// 75 hobbies
 $ MATCH (a:Student {學號:'r09922063'})-[r:foaf]->(ff)--(h:Hobby)
 RETURN ff,h
 
+// Remove my hobby friends' hobbies
+// 47 hobbies
+$ MATCH (s1:Student {學號:'r09922063'})-[r1:hobbyFriends]->(hf)--(h1:Hobby)
+WITH collect(distinct h1) as hobbies1
+MATCH (s2:Student {學號:'r09922063'})-[r2:foaf]->(ff)--(h2:Hobby)
+WITH hobbies1, ff, h2, collect(distinct h2) AS hobbies2
+WHERE NONE (h2 in hobbies2 where h2 in hobbies1)
+RETURN hobbies2, ff
+
 
 [Task 3]
-// connect my foaf to its hobby friends
-$ MATCH (me:Student {學號: 'r09922063'})-[r1:foaf]->(ff:Student)--(ffh:Hobby)
-MATCH (ffFriend:Student)--(ffFriendh:Hobby)
-WHERE ffh.hobby = ffFriendh.hobby AND ffFriend.學號 <> ff.學號
-MERGE (ff)-[r2:hobbyFriends]->(ffFriend)
-
-// connect my foaf to its foaf
-$ MATCH (me:Student {學號: 'r09922063'})-[r1:foaf]->(ff:Student)--(ffh:Hobby)
-MATCH (ff:Student)-[r2:hobbyFriends]->(ffFriend:Student)--(ffFriendh:Hobby)
-MATCH (foafFF:Student)--(foafFFh:Hobby)
-WHERE ffFriendh.hobby = foafFFh.hobby AND NOT (ff)-[:hobbyFriends]->(foafFF) AND foafFF.學號 <> ff.學號
-MERGE (ff)-[r3:foaf]->(foafFF)
-
-
-// print -> foafFFh.hobby <> myh.hobby didn't work. 
-$ MATCH (me:Student {學號: 'r09922063'})-[r1:foaf]->(ff:Student)--(ffh:Hobby)
-MATCH (me:Student {學號: 'r09922063'})--(myh:Hobby)
-MATCH (ff)-[r3:foaf]->(foafFF)--(foafFFh:Hobby)
-WHERE foafFFh.hobby <> myh.hobby AND foafFF.學號 <> 'r09922063'
-RETURN DISTINCT(foafFFh)
-
-
-// print result
-$ MATCH (me:Student {學號: 'r09922063'})-[r1:foaf]->()-[r3:foaf]->(foafFF)--(foafFFh:Hobby)
-MATCH (me:Student {學號: 'r09922063'})--(myh:Hobby)
-WHERE foafFF.學號 <> 'r09922063' AND NOT foafFFh.hobby IN ['看電影', '聽音樂', '畫圖', '看遊戲實況', '逛展']
-RETURN DISTINCT(foafFFh)
+$ MATCH (s1:Student {學號:'r09922063'})-[r1:hobbyFriends]->(hf)--(h1:Hobby)
+WITH collect(distinct h1) as hobbies1
+MATCH (s2:Student {學號:'r09922063'})-[r2:foaf]->(ff)--(h2:Hobby)
+WITH hobbies1, ff, h2, collect(distinct h2) AS hobbies2
+WHERE NONE (h2 in hobbies2 where h2 in hobbies1)
+RETURN hobbies2
 
