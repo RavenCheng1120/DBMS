@@ -14,6 +14,8 @@ In this homework, you need to write a Python program and write SQL statement ins
 
 ## Homework 6 - MongoDB & Neo4j
 
+Use home-brew to download MongoDB on MacOS.
+
 ### MongoDB Basic instruction
 
 1. Start MongoDB server
@@ -209,5 +211,20 @@ Merge: Create relationship if the relationship isn't exist.
 ```cypher
 LOAD CSV WITH HEADERS FROM "file:///hw6_hobbies.csv" AS csvLine
 MERGE (:Student {學號: csvLine.學號, 姓名: csvLine.姓名})
+```
+
+11. WHERE NONE() on the collection: EXCLUDE
+
+Pass down the collect result (hobbies1) using `WITH`.
+
+ref: https://neo4j.com/developer/kb/performing-pattern-negation/
+
+```cypher
+MATCH (s1:Student {學號:'r09922063'})-[r1:hobbyFriends]->(hf)--(h1:Hobby)
+WITH collect(distinct h1) as hobbies1
+MATCH (s2:Student {學號:'r09922063'})-[r2:foaf]->(ff)--(h2:Hobby)
+WITH hobbies1, ff, h2, collect(distinct h2) AS hobbies2
+WHERE NONE (h2 in hobbies2 where h2 in hobbies1)
+RETURN hobbies2, ff
 ```
 
